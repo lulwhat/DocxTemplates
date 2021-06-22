@@ -85,7 +85,7 @@ class MsDocxTemplatesGui(QDialog):
         self.setLayout(mainLayout)
         self.setWindowTitle("Шаблоны MS Word")
         self.setMinimumSize(700, 400)
-        self.setWindowIcon(QIcon("icons\\logo_ug.png"))
+        self.setWindowIcon(QIcon(self.resource_path("logo_ug.png")))
         self.setWindowFlags(Qt.WindowFlags())
 
     def templateBrowseButtonAction(self):
@@ -252,6 +252,16 @@ class MsDocxTemplatesGui(QDialog):
             for row in rows:
                 for col in columns:
                     self.tableWidget.setItem(row, col, QTableWidgetItem(""))
+
+    def resource_path(self, relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

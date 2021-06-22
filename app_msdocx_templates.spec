@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['app_msdocx_templates.py'],
-             pathex=['C:\\Users\\baidak\\acad_py_scripts\\app_msdocx_templates'],
+             pathex=['C:\\Users\\lulwh\\UG_work\\DocxTemplates'],
              binaries=[],
-             datas=[('logo_ug.png', '.')],
+             datas=[('icons/logo_ug.png', '.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -15,8 +15,16 @@ a = Analysis(['app_msdocx_templates.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+
+for d in a.datas:
+    if 'pyconfig' in d[0]:
+        a.datas.remove(d)
+        break
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
+
+a.datas += [('logo_ug.png','C:\\Users\\lulwh\\UG_work\\DocxTemplates\\logo_ug.png', 'Data')]
 exe = EXE(pyz,
           a.scripts,
           a.binaries,
