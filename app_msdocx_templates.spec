@@ -6,7 +6,7 @@ block_cipher = None
 a = Analysis(['app_msdocx_templates.py'],
              pathex=['C:\\Users\\lulwh\\UG_work\\DocxTemplates'],
              binaries=[],
-             datas=[('icons/logo_ug.png', '.')],
+             datas=[],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -24,7 +24,7 @@ for d in a.datas:
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
-a.datas += [('logo_ug.png','C:\\Users\\lulwh\\UG_work\\DocxTemplates\\logo_ug.png', 'Data')]
+a.datas += [('logo_ug.png','C:\\Users\\baidak\\acad_py_scripts\\app_msdocx_templates\\logo_ug.png', 'Data')]
 exe = EXE(pyz,
           a.scripts,
           a.binaries,

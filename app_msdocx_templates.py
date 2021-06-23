@@ -3,16 +3,17 @@ import os.path
 import csv
 import io
 
-from PyQt5.QtWidgets import (QApplication, QDial, QDialog, QGridLayout, QGroupBox, QComboBox, QCompleter,
+from PyQt5.QtWidgets import (QApplication, QDialog,
                              QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QProgressBar, QPushButton, 
-                             QTableWidget, QTabWidget, QVBoxLayout, QWidget, QFileDialog, QMessageBox, 
-                             QStyleFactory, QRadioButton, QTableWidget, QTableWidgetItem, qApp, QSpacerItem,
-                             QSizePolicy, QHeaderView
+                             QTableWidget, QVBoxLayout, QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
+                             qApp, QSpacerItem, QHeaderView
                             )
 from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtCore import Qt, QSortFilterProxyModel, QEvent
+from PyQt5.QtCore import Qt, QEvent
 
-from msdocx_templates_functionality import DocxHandler
+from docx.opc.exceptions import PackageNotFoundError
+
+from msdocx_templates_functionality import *
 
 class MsDocxTemplatesGui(QDialog):
     def __init__(self, parent=None):
@@ -103,19 +104,23 @@ class MsDocxTemplatesGui(QDialog):
             self.templatePathLineEdit.setText(fileName.replace("/", "\\"))
 
             # read template and fill table with variables
-            self.docxHandler = DocxHandler(fileName)
-            self.replacement_data = self.docxHandler.templateRead()
-            if len(self.replacement_data) > 0:
-                self.tableWidget.setRowCount(0)
-                vars = list(self.replacement_data.keys())
-                for i in range(len(vars)):
-                    self.tableWidget.insertRow(self.tableWidget.rowCount())
-                    self.tableWidget.setItem(i,0, QTableWidgetItem(vars[i]))
-                    self.tableWidget.item(i,0).setFlags(self.flags)
-                self.fillTableWidgetNoneCells()
-            else:
+            try:
+                self.docxHandler = DocxHandler(fileName)
+                self.replacement_data = self.docxHandler.templateRead()
+                if len(self.replacement_data) > 0:
+                    self.tableWidget.setRowCount(0)
+                    vars = list(self.replacement_data.keys())
+                    for i in range(len(vars)):
+                        self.tableWidget.insertRow(self.tableWidget.rowCount())
+                        self.tableWidget.setItem(i,0, QTableWidgetItem(vars[i]))
+                        self.tableWidget.item(i,0).setFlags(self.flags)
+                    self.fillTableWidgetNoneCells()
+                else:
+                    msg = QMessageBox()
+                    msg.warning(self, "Ошибка", "Переменные в файле не найдены")
+            except PackageNotFoundError:
                 msg = QMessageBox()
-                msg.warning(self, "Ошибка", "Переменные в файле не найдены")
+                msg.warning(self, "Ошибка", "Неверный формат шаблона")
 
     def savePathBrowseButtonAction(self):
         options = QFileDialog.Options()
@@ -134,12 +139,10 @@ class MsDocxTemplatesGui(QDialog):
     # the export
     def exportButtonAction(self):
         self.progressBar.setValue(0)
-
         try:
             for row in range(self.tableWidget.rowCount()):
                 self.replacement_data[self.tableWidget.item(row,0).text()] = self.tableWidget.item(row,1).text()
-        
-            self.docxHandler.docxReplace(self.replacement_data)
+            self.docxHandler.docxReplace(self.templatePathLineEdit.text(), self.replacement_data)
             if self.docxHandler.docxSave(self.savePathLineEdit.text()) == True:
                 QMessageBox.about(self, "Шаблоны Ms Word", f"Файл {os.path.basename(self.savePathLineEdit.text())} создан")
                 self.progressBar.setValue(100)
@@ -149,6 +152,15 @@ class MsDocxTemplatesGui(QDialog):
         except AttributeError:
             msg = QMessageBox()
             msg.warning(self, "Ошибка", "Не выбран файл шаблона")
+        except SavePathIsNotAbsoluteError:
+            msg = QMessageBox()
+            msg.warning(self, "Ошибка", "Введите полный путь для сохранения файла")
+        except SaveFileWrongFormatError:
+            msg = QMessageBox()
+            msg.warning(self, "Ошибка", "Неверный формат экспортируемого файла")
+        except PackageNotFoundError:
+            msg = QMessageBox()
+            msg.warning(self, "Ошибка", "Неверный формат шаблона")
 
 
 

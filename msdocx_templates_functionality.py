@@ -1,13 +1,30 @@
 import docx
 import re
+import os
+
+class SavePathIsNotAbsoluteError(Exception):
+    pass
+class SaveFileWrongFormatError(Exception):
+    pass
 
 class DocxHandler:
     def __init__(self, template_path):
+        self.template_path = template_path
         self.doc = docx.Document(template_path)
 
     def docxSave(self, save_path):
-        self.doc.save(save_path)
-        return True
+        if "." not in os.path.basename(save_path):
+            raise SaveFileWrongFormatError("Save file has no extension")
+        elif (
+            (os.path.basename(save_path).split(".")[1] != "doc") and
+            (os.path.basename(save_path).split(".")[1] != "docx")
+            ):
+            raise SaveFileWrongFormatError("Save file extension should be .doc or .docx")
+        elif os.path.isabs(save_path) == False:
+            raise SavePathIsNotAbsoluteError("Need absolute file path")
+        else:
+            self.doc.save(save_path)
+            return True
 
     def templateRead(self):
         vars = {}
@@ -18,7 +35,8 @@ class DocxHandler:
                 vars[var] = ""
         return vars
 
-    def docxReplace(self, data):
+    def docxReplace(self, template_path, data):
+        self.doc = docx.Document(template_path)
         paragraphs = list(self.doc.paragraphs)
         for t in self.doc.tables:
             for row in t.rows:
