@@ -20,11 +20,10 @@ for d in a.datas:
     if 'pyconfig' in d[0]:
         a.datas.remove(d)
         break
+a.datas += [('logo_ug.png','C:\\Users\\baidak\\acad_py_scripts\\app_msdocx_templates\\logo_ug.png', 'Data')]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
-
-a.datas += [('logo_ug.png','C:\\Users\\baidak\\acad_py_scripts\\app_msdocx_templates\\logo_ug.png', 'Data')]
 exe = EXE(pyz,
           a.scripts,
           a.binaries,
